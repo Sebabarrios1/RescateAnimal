@@ -1,0 +1,19 @@
+body {
+    background-color: #f8f9fa;
+}
+
+section {
+    padding: 20px 0;
+}
+
+/* Para ocultar/mostrar secciones con JavaScript */
+.d-none {
+    display: none !important;
+}
+
+#mapa {
+    height: 450px;
+    width: 100%;
+    border-radius: 15px;
+    z-index: 1; /* Para que no se tape con el menú */
+}

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RescateAnimal - Mascotas Perdidas y Encontradas</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow">
+        <div class="container">
+            <a class="navbar-brand" href="#">🐾 RescateAnimal</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" id="link-perdidos">Perdidos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="link-encontrados">Encontrados</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="link-adopcion">Adopción</a>
+                    </li>
+                </ul>
+                <button class="btn btn-outline-light" data-bs-toggle="modal"
+                    data-bs-target="#modalLogin">Ingresar</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mt-4">
+        <section id="sec-perdidos">
+            <div class="row">
+                <div class="col-md-8">
+                    <h2>Mascotas Perdidas</h2>
+                    <div id="mapa" class="bg-light border"
+                        style="height: 450px; border-radius: 15px; display: flex; align-items: center; justify-content: center;">
+                        <p class="text-muted">Aquí cargaremos el mapa pronto...</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <button class="btn btn-danger btn-lg w-100 mb-3 shadow" data-bs-toggle="modal"
+                        data-bs-target="#modalPublicar">
+                        ¡Perdí a mi mascota!
+                    </button>
+                    <div id="lista-perdidos">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="sec-encontrados" class="d-none">
+            <h2>Mascotas Encontradas</h2>
+            <p>Listado de animales que buscan a su dueño...</p>
+        </section>
+
+        <section id="sec-adopcion" class="d-none">
+            <h2>Adopción Responsable</h2>
+            <p>Animalitos que buscan un nuevo hogar...</p>
+        </section>
+    </main>
+
+    <div class="modal fade" id="modalLogin" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Iniciar Sesión</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formLogin">
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Entrar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalPublicar" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">🚨 Reportar Mascota Perdida</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formPublicar">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nombre de la mascota (si tiene)</label>
+                                <input type="text" class="form-control" id="petNombre" placeholder="Ej: Firulais">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Especie</label>
+                                <select class="form-select" id="petTipo">
+                                    <option value="perro">Perro</option>
+                                    <option value="gato">Gato</option>
+                                    <option value="otro">Otro</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descripción / Señas particulares</label>
+                            <textarea class="form-control" id="petDesc" rows="3"
+                                placeholder="Ej: Tiene un collar azul, es de tamaño mediano..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Foto de la mascota</label>
+                            <input type="file" class="form-control" id="petFoto" accept="image/*">
+                        </div>
+                        <div class="alert alert-info">
+                            Haz clic en el mapa detrás de esta ventana para marcar la zona aproximada.
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100">Publicar Búsqueda</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
