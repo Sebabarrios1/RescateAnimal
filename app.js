@@ -11,39 +11,45 @@ document.addEventListener('DOMContentLoaded', () => {
     const secAdopcion = document.getElementById('sec-adopcion');
 
     function ocultarTodas() {
-        secPerdidos.classList.add('d-none');
-        secEncontrados.classList.add('d-none');
-        secAdopcion.classList.add('d-none');
-        linkPerdidos.classList.remove('active');
-        linkEncontrados.classList.remove('active');
-        linkAdopcion.classList.remove('active');
+        if (secPerdidos) secPerdidos.classList.add('d-none');
+        if (secEncontrados) secEncontrados.classList.add('d-none');
+        if (secAdopcion) secAdopcion.classList.add('d-none');
+
+        if (linkPerdidos) linkPerdidos.classList.remove('active');
+        if (linkEncontrados) linkEncontrados.classList.remove('active');
+        if (linkAdopcion) linkAdopcion.classList.remove('active');
     }
 
-    linkPerdidos.addEventListener('click', (e) => {
-        e.preventDefault();
-        ocultarTodas();
-        secPerdidos.classList.remove('d-none');
-        linkPerdidos.classList.add('active');
-    });
+    if (linkPerdidos) {
+        linkPerdidos.addEventListener('click', (e) => {
+            e.preventDefault();
+            ocultarTodas();
+            secPerdidos.classList.remove('d-none');
+            linkPerdidos.classList.add('active');
+        });
+    }
 
-    linkEncontrados.addEventListener('click', (e) => {
-        e.preventDefault();
-        ocultarTodas();
-        secEncontrados.classList.remove('d-none');
-        linkEncontrados.classList.add('active');
-    });
+    if (linkEncontrados) {
+        linkEncontrados.addEventListener('click', (e) => {
+            e.preventDefault();
+            ocultarTodas();
+            secEncontrados.classList.remove('d-none');
+            linkEncontrados.classList.add('active');
+        });
+    }
 
-    linkAdopcion.addEventListener('click', (e) => {
-        e.preventDefault();
-        ocultarTodas();
-        secAdopcion.classList.remove('d-none');
-        linkAdopcion.classList.add('active');
-    });
+    if (linkAdopcion) {
+        linkAdopcion.addEventListener('click', (e) => {
+            e.preventDefault();
+            ocultarTodas();
+            secAdopcion.classList.remove('d-none');
+            linkAdopcion.classList.add('active');
+        });
+    }
 
     console.log("Sistema de navegación listo 🐾");
 
     // 2. CONFIGURACIÓN DEL MAPA
-    // Iniciamos en Santa Fe (puedes ajustar las coordenadas si prefieres)
     const map = L.map('mapa').setView([-31.6107, -60.6973], 13);
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -86,36 +92,54 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3. ENVÍO DEL FORMULARIO (SOPORTE PARA FOTOS)
     const formPublicar = document.getElementById('formPublicar');
 
-    formPublicar.addEventListener('submit', (e) => {
-        e.preventDefault();
+    if (formPublicar) {
+        formPublicar.addEventListener('submit', (e) => {
+            e.preventDefault();
+            console.log("🚀 Intento de publicación detectado...");
 
-        if (!ubicacionSeleccionada) {
-            alert("Por favor, marca la zona en el mapa.");
-            return;
-        }
+            if (!ubicacionSeleccionada) {
+                alert("Por favor, marca la zona en el mapa primero.");
+                return;
+            }
 
-        // Usamos FormData para empaquetar la imagen real para Cloudinary
-        const formData = new FormData();
-        formData.append('nombre', document.getElementById('petNombre').value);
-        formData.append('tipo', document.getElementById('petTipo').value);
-        formData.append('descripcion', document.getElementById('petDesc').value);
-        formData.append('ubicacion', JSON.stringify(ubicacionSeleccionada));
-        formData.append('petFoto', document.getElementById('petFoto').files[0]);
+            // Usamos FormData para empaquetar la imagen real para Cloudinary
+            const formData = new FormData();
+            formData.append('nombre', document.getElementById('petNombre').value);
+            formData.append('tipo', document.getElementById('petTipo').value);
+            formData.append('descripcion', document.getElementById('petDesc').value);
+            formData.append('ubicacion', JSON.stringify(ubicacionSeleccionada));
 
-        fetch('/publicar-perdido', {
-            method: 'POST',
-            body: formData // No enviamos headers de JSON, FormData lo hace solo
-        })
-            .then(res => res.json())
-            .then(data => {
-                alert(data.mensaje);
-                if (marcadorTemporal) map.removeLayer(marcadorTemporal);
-                bootstrap.Modal.getInstance(document.getElementById('modalPublicar')).hide();
-                formPublicar.reset();
-                location.reload(); // Recargamos para ver la nueva mascota con su foto
+            const fotoInput = document.getElementById('petFoto');
+            if (fotoInput.files.length > 0) {
+                formData.append('petFoto', fotoInput.files[0]);
+            }
+
+            fetch('/publicar-perdido', {
+                method: 'POST',
+                body: formData
             })
-            .catch(err => console.error("Error al publicar:", err));
-    });
+                .then(res => res.json())
+                .then(data => {
+                    console.log("Respuesta del servidor:", data);
+                    alert(data.mensaje);
+                    if (marcadorTemporal) map.removeLayer(marcadorTemporal);
+
+                    // Cerrar modal de Bootstrap de forma segura
+                    const modalElement = document.getElementById('modalPublicar');
+                    const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                    if (modalInstance) modalInstance.hide();
+
+                    formPublicar.reset();
+                    location.reload();
+                })
+                .catch(err => {
+                    console.error("Error al publicar:", err);
+                    alert("Hubo un fallo en la subida. Revisa la consola.");
+                });
+        });
+    } else {
+        console.error("❌ Error: No se encontró el formulario 'formPublicar'. Revisa el ID en tu HTML.");
+    }
 
     // 4. CARGAR MASCOTAS DESDE LA DB
     function cargarMascotasDelServidor() {
