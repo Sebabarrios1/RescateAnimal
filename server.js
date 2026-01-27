@@ -1,48 +1,69 @@
-require('dotenv').config(); // Siempre primero
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
-const app = express();
-const port = 3000;
+const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-// Middleware
+const app = express();
+const port = process.env.PORT || 3000;
+
+// Configuración de Cloudinary (Usa las keys que pusiste en Render)
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// Configuración del almacenamiento en la nube
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'mascotas_rescatadas',
+        allowed_formats: ['jpg', 'png', 'jpeg']
+    }
+});
+const upload = multer({ storage: storage });
+
+// Middlewares
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// CONEXIÓN A MONGODB ATLAS (Usando la variable de entorno)
-const mongoURI = process.env.MONGO_URI;
-console.log("Intentando conectar a:", mongoURI); // Para verificar en la terminal
+// Conexión a MongoDB
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log("✅ Conectado a MongoDB Atlas"))
+    .catch(err => console.error("❌ Error Mongo:", err));
 
-mongoose.connect(mongoURI)
-    .then(() => console.log("✅ Conectado exitosamente a MongoDB Atlas"))
-    .catch(err => console.error("❌ Error de conexión:", err));
-
-// Importar el Modelo
+// Modelo de Mascota
 const Mascota = require('./models/Mascota');
 
-// RUTA: Guardar mascota en DB
-app.post('/publicar-perdido', async (req, res) => {
+// RUTA POST: Ahora acepta una imagen ('petFoto')
+app.post('/publicar-perdido', upload.single('petFoto'), async (req, res) => {
     try {
-        const nuevaMascota = new Mascota(req.body);
+        // Parseamos la ubicación porque viene como texto desde FormData
+        const ubicacion = JSON.parse(req.body.ubicacion);
+
+        const nuevaMascota = new Mascota({
+            nombre: req.body.nombre,
+            tipo: req.body.tipo,
+            descripcion: req.body.descripcion,
+            ubicacion: ubicacion,
+            foto: req.file ? req.file.path : "", // Aquí se guarda la URL de Cloudinary
+            fecha: new Date().toLocaleDateString()
+        });
+
         await nuevaMascota.save();
-        console.log("Mascota guardada en Atlas:", nuevaMascota);
-        res.status(200).send({ mensaje: "¡Guardado permanentemente en la nube!" });
+        res.status(200).send({ mensaje: "¡Publicado con éxito en la nube!" });
     } catch (error) {
-        console.error("Error al guardar:", error);
-        res.status(500).send({ mensaje: "Error al guardar en la base de datos" });
+        console.error(error);
+        res.status(500).send({ mensaje: "Error al publicar" });
     }
 });
 
-// RUTA: Obtener todas las mascotas de la DB
 app.get('/obtener-mascotas', async (req, res) => {
-    try {
-        const mascotas = await Mascota.find();
-        res.json(mascotas);
-    } catch (error) {
-        res.status(500).send({ mensaje: "Error al obtener mascotas" });
-    }
+    const mascotas = await Mascota.find();
+    res.json(mascotas);
 });
 
-app.listen(port, () => {
-    console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
-});
+app.listen(port, () => console.log(`🚀 Server en puerto ${port}`));

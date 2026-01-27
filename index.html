@@ -122,8 +122,9 @@
                                 placeholder="Ej: Tiene un collar azul, es de tamaño mediano..."></textarea>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Foto de la mascota</label>
-                            <input type="file" class="form-control" id="petFoto" accept="image/*">
+                            <label for="petFoto" class="form-label">Foto de la mascota</label>
+                            <input type="file" class="form-control" id="petFoto" name="petFoto" accept="image/*"
+                                required>
                         </div>
                         <div class="alert alert-info">
                             Haz clic en el mapa detrás de esta ventana para marcar la zona aproximada.
