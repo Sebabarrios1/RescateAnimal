@@ -70,7 +70,7 @@ app.post('/login', async (req, res) => {
 
         const token = jwt.sign(
             { id: usuario._id, nombre: usuario.nombre },
-            process.env.JWT_SECRET || 'CLAVE_SECRETA_SUPER_SEGURA',
+            process.env.JWT_SECRET,
             { expiresIn: '2h' }
         );
 
