@@ -5,18 +5,23 @@ const path = require('path');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+// Modelos
+const Usuario = require('./models/Usuario');
+const Mascota = require('./models/Mascota');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Configuración de Cloudinary (Usa las keys que pusiste en Render)
+// Configuración de Cloudinary
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-// Configuración del almacenamiento en la nube
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
@@ -30,18 +35,62 @@ const upload = multer({ storage: storage });
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// Conexión a MongoDB
+// Conexión a MongoDB Atlas
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log("✅ Conectado a MongoDB Atlas"))
-    .catch(err => console.error("❌ Error Mongo:", err));
+    .catch(err => console.error("❌ Error de conexión:", err));
 
-// Modelo de Mascota
-const Mascota = require('./models/Mascota');
+// --- RUTAS DE USUARIO (Las que ya tenías) ---
 
-// RUTA POST: Ahora acepta una imagen ('petFoto')
+app.post('/registrar', async (req, res) => {
+    try {
+        const { nombre, email, password } = req.body;
+        const usuarioExistente = await Usuario.findOne({ email });
+        if (usuarioExistente) return res.status(400).json({ mensaje: "Este email ya está registrado." });
+
+        const salt = await bcrypt.genSalt(10);
+        const passwordHasheada = await bcrypt.hash(password, salt);
+
+        const nuevoUsuario = new Usuario({ nombre, email, password: passwordHasheada });
+        await nuevoUsuario.save();
+        res.status(201).json({ mensaje: "¡Usuario creado con éxito! Ya puedes iniciar sesión." });
+    } catch (error) {
+        res.status(500).json({ mensaje: "Error al registrar el usuario." });
+    }
+});
+
+app.post('/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const usuario = await Usuario.findOne({ email });
+        if (!usuario) return res.status(400).json({ mensaje: "Usuario o contraseña incorrectos." });
+
+        const esValida = await bcrypt.compare(password, usuario.password);
+        if (!esValida) return res.status(400).json({ mensaje: "Usuario o contraseña incorrectos." });
+
+        const token = jwt.sign(
+            { id: usuario._id, nombre: usuario.nombre },
+            process.env.JWT_SECRET || 'CLAVE_SECRETA_SUPER_SEGURA',
+            { expiresIn: '2h' }
+        );
+
+        res.json({ mensaje: "Bienvenido de nuevo", token, nombre: usuario.nombre });
+    } catch (error) {
+        res.status(500).json({ mensaje: "Error en el inicio de sesión." });
+    }
+});
+
+// --- RUTA DE PUBLICACIÓN PROTEGIDA ---
+
 app.post('/publicar-perdido', upload.single('petFoto'), async (req, res) => {
     try {
-        // Parseamos la ubicación porque viene como texto desde FormData
+        // 1. Verificamos si hay un token en la cabecera
+        const token = req.headers['authorization'];
+        if (!token) return res.status(401).json({ mensaje: "Debes iniciar sesión para publicar." });
+
+        // 2. Validamos el token
+        const verificado = jwt.verify(token, process.env.JWT_SECRET || 'CLAVE_SECRETA_SUPER_SEGURA');
+
         const ubicacion = JSON.parse(req.body.ubicacion);
 
         const nuevaMascota = new Mascota({
@@ -49,21 +98,28 @@ app.post('/publicar-perdido', upload.single('petFoto'), async (req, res) => {
             tipo: req.body.tipo,
             descripcion: req.body.descripcion,
             ubicacion: ubicacion,
-            foto: req.file ? req.file.path : "", // Aquí se guarda la URL de Cloudinary
+            foto: req.file ? req.file.path : "",
+            autor: verificado.id, // <--- Aquí guardamos quién la subió
             fecha: new Date().toLocaleDateString()
         });
 
         await nuevaMascota.save();
-        res.status(200).send({ mensaje: "¡Publicado con éxito en la nube!" });
+        res.status(200).send({ mensaje: "¡Mascota publicada con éxito!" });
     } catch (error) {
         console.error(error);
-        res.status(500).send({ mensaje: "Error al publicar" });
+        res.status(401).json({ mensaje: "Token no válido o sesión expirada." });
     }
 });
 
 app.get('/obtener-mascotas', async (req, res) => {
-    const mascotas = await Mascota.find();
-    res.json(mascotas);
+    try {
+        const mascotas = await Mascota.find();
+        res.json(mascotas);
+    } catch (error) {
+        res.status(500).send({ mensaje: "Error al obtener datos" });
+    }
 });
 
-app.listen(port, () => console.log(`🚀 Server en puerto ${port}`));
+app.listen(port, () => {
+    console.log(`🚀 Servidor listo en puerto ${port}`);
+});

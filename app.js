@@ -89,20 +89,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // 3. ENVÍO DEL FORMULARIO (SOPORTE PARA FOTOS)
+    // 3. ENVÍO DEL FORMULARIO (CON TOKEN DE SEGURIDAD)
     const formPublicar = document.getElementById('formPublicar');
 
     if (formPublicar) {
         formPublicar.addEventListener('submit', (e) => {
             e.preventDefault();
-            console.log("🚀 Intento de publicación detectado...");
+
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert("Debes iniciar sesión para poder publicar.");
+                return;
+            }
 
             if (!ubicacionSeleccionada) {
                 alert("Por favor, marca la zona en el mapa primero.");
                 return;
             }
 
-            // Usamos FormData para empaquetar la imagen real para Cloudinary
             const formData = new FormData();
             formData.append('nombre', document.getElementById('petNombre').value);
             formData.append('tipo', document.getElementById('petTipo').value);
@@ -116,29 +120,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
             fetch('/publicar-perdido', {
                 method: 'POST',
+                headers: {
+                    'Authorization': token // Enviamos el token al servidor
+                },
                 body: formData
             })
                 .then(res => res.json())
                 .then(data => {
-                    console.log("Respuesta del servidor:", data);
                     alert(data.mensaje);
-                    if (marcadorTemporal) map.removeLayer(marcadorTemporal);
-
-                    // Cerrar modal de Bootstrap de forma segura
-                    const modalElement = document.getElementById('modalPublicar');
-                    const modalInstance = bootstrap.Modal.getInstance(modalElement);
-                    if (modalInstance) modalInstance.hide();
-
-                    formPublicar.reset();
                     location.reload();
                 })
-                .catch(err => {
-                    console.error("Error al publicar:", err);
-                    alert("Hubo un fallo en la subida. Revisa la consola.");
-                });
+                .catch(err => console.error("Error al publicar:", err));
         });
-    } else {
-        console.error("❌ Error: No se encontró el formulario 'formPublicar'. Revisa el ID en tu HTML.");
     }
 
     // 4. CARGAR MASCOTAS DESDE LA DB
@@ -165,6 +158,79 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .catch(err => console.error("Error al cargar mascotas:", err));
     }
+
+    // 5. LÓGICA DE USUARIOS (REGISTRO Y LOGIN)
+    const formRegistro = document.getElementById('formRegistro');
+    if (formRegistro) {
+        formRegistro.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const datos = {
+                nombre: document.getElementById('regNombre').value,
+                email: document.getElementById('regEmail').value,
+                password: document.getElementById('regPassword').value
+            };
+
+            fetch('/registrar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    alert(data.mensaje);
+                    bootstrap.Modal.getInstance(document.getElementById('modalRegistro')).hide();
+                    formRegistro.reset();
+                })
+                .catch(err => console.error("Error:", err));
+        });
+    }
+
+    const formLogin = document.getElementById('formLogin');
+    if (formLogin) {
+        formLogin.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const datos = {
+                email: document.getElementById('loginEmail').value,
+                password: document.getElementById('loginPassword').value
+            };
+
+            fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(datos)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.token) {
+                        localStorage.setItem('token', data.token);
+                        localStorage.setItem('nombreUsuario', data.nombre);
+                        location.reload();
+                    } else {
+                        alert(data.mensaje);
+                    }
+                })
+                .catch(err => console.error("Error:", err));
+        });
+    }
+
+    // 6. GESTIÓN DE INTERFAZ (BOTONES DE SESIÓN)
+    const token = localStorage.getItem('token');
+    const nombre = localStorage.getItem('nombreUsuario');
+    const authButtons = document.getElementById('authButtons');
+    const userInfo = document.getElementById('userInfo');
+    const userNameSpan = document.getElementById('userName');
+
+    if (token && nombre) {
+        if (authButtons) authButtons.classList.add('d-none');
+        if (userInfo) userInfo.classList.remove('d-none');
+        if (userNameSpan) userNameSpan.innerText = nombre;
+    }
+
+    window.cerrarSesion = function () {
+        localStorage.removeItem('token');
+        localStorage.removeItem('nombreUsuario');
+        location.reload();
+    };
 
     cargarMascotasDelServidor();
 });

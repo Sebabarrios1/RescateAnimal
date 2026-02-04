@@ -31,12 +31,23 @@
                         <a class="nav-link" href="#" id="link-adopcion">Adopción</a>
                     </li>
                 </ul>
-                <button class="btn btn-outline-light" data-bs-toggle="modal"
-                    data-bs-target="#modalLogin">Ingresar</button>
+
+                <div class="d-flex align-items-center">
+                    <div id="authButtons">
+                        <button class="btn btn-outline-light me-2" data-bs-toggle="modal"
+                            data-bs-target="#modalLogin">Ingresar</button>
+                        <button class="btn btn-light text-primary fw-bold" data-bs-toggle="modal"
+                            data-bs-target="#modalRegistro">Registrarse</button>
+                    </div>
+
+                    <div id="userInfo" class="d-none text-white">
+                        <span class="me-3">Hola, <strong id="userName">Usuario</strong></span>
+                        <button class="btn btn-sm btn-outline-light" onclick="cerrarSesion()">Salir</button>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
-
     <main class="container mt-4">
         <section id="sec-perdidos">
             <div class="row">
@@ -130,6 +141,58 @@
                             Haz clic en el mapa detrás de esta ventana para marcar la zona aproximada.
                         </div>
                         <button type="submit" class="btn btn-danger w-100">Publicar Búsqueda</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalRegistro" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Crear Cuenta</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formRegistro">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre Completo</label>
+                            <input type="text" id="regNombre" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" id="regEmail" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Contraseña</label>
+                            <input type="password" id="regPassword" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Registrarse</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalLogin" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ingresar</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formLogin">
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" id="loginEmail" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Contraseña</label>
+                            <input type="password" id="loginPassword" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Entrar</button>
                     </form>
                 </div>
             </div>
