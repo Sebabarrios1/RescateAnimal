@@ -160,6 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 5. LÓGICA DE USUARIOS (REGISTRO Y LOGIN)
+    // --- LÓGICA DE REGISTRO ACTUALIZADA ---
     const formRegistro = document.getElementById('formRegistro');
     if (formRegistro) {
         formRegistro.addEventListener('submit', (e) => {
@@ -178,13 +179,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(res => res.json())
                 .then(data => {
                     alert(data.mensaje);
-                    bootstrap.Modal.getInstance(document.getElementById('modalRegistro')).hide();
+
+                    // 1. Cerramos el modal de forma segura
+                    const modalElement = document.getElementById('modalRegistro');
+                    const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                    if (modalInstance) modalInstance.hide();
+
+                    // 2. LIMPIEZA MANUAL (Esto quita lo oscuro)
+                    const backdrop = document.querySelector('.modal-backdrop');
+                    if (backdrop) backdrop.remove();
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+
                     formRegistro.reset();
                 })
-                .catch(err => console.error("Error:", err));
+                .catch(err => {
+                    console.error("Error al registrar:", err);
+                    alert("Error en el registro. Revisa la consola.");
+                });
         });
     }
-
     const formLogin = document.getElementById('formLogin');
     if (formLogin) {
         formLogin.addEventListener('submit', (e) => {
