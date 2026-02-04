@@ -48,6 +48,7 @@
             </div>
         </div>
     </nav>
+
     <main class="container mt-4">
         <section id="sec-perdidos">
             <div class="row">
@@ -55,7 +56,7 @@
                     <h2>Mascotas Perdidas</h2>
                     <div id="mapa" class="bg-light border"
                         style="height: 450px; border-radius: 15px; display: flex; align-items: center; justify-content: center;">
-                        <p class="text-muted">Aquí cargaremos el mapa pronto...</p>
+                        <p class="text-muted">Cargando mapa de Santa Fe...</p>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -80,74 +81,7 @@
         </section>
     </main>
 
-    <div class="modal fade" id="modalLogin" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Iniciar Sesión</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="formLogin">
-                        <div class="mb-3">
-                            <label class="form-label">Email</label>
-                            <input type="email" class="form-control" id="email" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Contraseña</label>
-                            <input type="password" class="form-control" id="password" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100">Entrar</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="modalPublicar" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title">🚨 Reportar Mascota Perdida</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="formPublicar">
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Nombre de la mascota (si tiene)</label>
-                                <input type="text" class="form-control" id="petNombre" placeholder="Ej: Firulais">
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Especie</label>
-                                <select class="form-select" id="petTipo">
-                                    <option value="perro">Perro</option>
-                                    <option value="gato">Gato</option>
-                                    <option value="otro">Otro</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Descripción / Señas particulares</label>
-                            <textarea class="form-control" id="petDesc" rows="3"
-                                placeholder="Ej: Tiene un collar azul, es de tamaño mediano..."></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="petFoto" class="form-label">Foto de la mascota</label>
-                            <input type="file" class="form-control" id="petFoto" name="petFoto" accept="image/*"
-                                required>
-                        </div>
-                        <div class="alert alert-info">
-                            Haz clic en el mapa detrás de esta ventana para marcar la zona aproximada.
-                        </div>
-                        <button type="submit" class="btn btn-danger w-100">Publicar Búsqueda</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="modalRegistro" tabindex="-1">
+    <div class="modal fade" id="modalRegistro" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
@@ -175,11 +109,11 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modalLogin" tabindex="-1">
+    <div class="modal fade" id="modalLogin" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Ingresar</h5>
+                    <h5 class="modal-title">Iniciar Sesión</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -193,6 +127,49 @@
                             <input type="password" id="loginPassword" class="form-control" required>
                         </div>
                         <button type="submit" class="btn btn-success w-100">Entrar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalPublicar" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">🚨 Reportar Mascota Perdida</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formPublicar">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Nombre de la mascota</label>
+                                <input type="text" class="form-control" id="petNombre" placeholder="Ej: Firulais">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Especie</label>
+                                <select class="form-select" id="petTipo">
+                                    <option value="perro">Perro</option>
+                                    <option value="gato">Gato</option>
+                                    <option value="otro">Otro</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descripción / Señas particulares</label>
+                            <textarea class="form-control" id="petDesc" rows="3"
+                                placeholder="Ej: Tiene un collar azul..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="petFoto" class="form-label">Foto de la mascota</label>
+                            <input type="file" class="form-control" id="petFoto" name="petFoto" accept="image/*"
+                                required>
+                        </div>
+                        <div class="alert alert-info">
+                            Haz clic en el mapa detrás de esta ventana para marcar la zona aproximada.
+                        </div>
+                        <button type="submit" class="btn btn-danger w-100">Publicar Búsqueda</button>
                     </form>
                 </div>
             </div>
