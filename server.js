@@ -120,6 +120,31 @@ app.get('/obtener-mascotas', async (req, res) => {
     }
 });
 
+// --- RUTA PARA ELIMINAR UNA MASCOTA ---
+app.delete('/eliminar-mascota/:id', async (req, res) => {
+    try {
+        const token = req.headers['authorization'];
+        if (!token) return res.status(401).json({ mensaje: "No autorizado" });
+
+        // Verificamos quién es el usuario
+        const verificado = jwt.verify(token, process.env.JWT_SECRET);
+        
+        // Buscamos la mascota
+        const mascota = await Mascota.findById(req.params.id);
+        if (!mascota) return res.status(404).json({ mensaje: "Mascota no encontrada" });
+
+        // SEGURIDAD: Solo el autor puede borrarla
+        if (mascota.autor.toString() !== verificado.id) {
+            return res.status(403).json({ mensaje: "No tienes permiso para borrar esto" });
+        }
+
+        await Mascota.findByIdAndDelete(req.params.id);
+        res.json({ mensaje: "Publicación eliminada correctamente" });
+    } catch (error) {
+        res.status(500).json({ mensaje: "Error al eliminar" });
+    }
+});
+
 app.listen(port, () => {
     console.log(`🚀 Servidor listo en puerto ${port}`);
 });

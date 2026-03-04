@@ -136,28 +136,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 4. CARGAR MASCOTAS DESDE LA DB
     function cargarMascotasDelServidor() {
+        const contenedor = document.getElementById('contenedor-cartas');
+        const token = localStorage.getItem('token');
+        const usuarioId = token ? JSON.parse(atob(token.split('.')[1])).id : null; // Decodificamos el ID del usuario del token
+
         fetch('/obtener-mascotas')
             .then(res => res.json())
             .then(mascotas => {
+                if (contenedor) contenedor.innerHTML = ""; // Limpiamos antes de cargar
+
                 mascotas.forEach(mascota => {
+                    // 1. Círculo en el mapa (Lo que ya tenías)
                     L.circle(mascota.ubicacion, {
-                        color: '#0000FF',
+                        color: '#007bff',
                         fillColor: '#007bff',
                         fillOpacity: 0.2,
                         radius: 200
                     }).addTo(map)
-                        .bindPopup(`
-                        <div style="text-align:center">
-                            <strong>Mascota: ${mascota.nombre}</strong><br>
-                            <img src="${mascota.foto}" alt="Foto" style="width:100%; max-height:150px; object-fit:cover; border-radius:10px; margin: 10px 0;">
-                            <p>${mascota.descripcion}</p>
-                            <small>Publicado: ${mascota.fecha}</small>
+                        .bindPopup(`<strong>${mascota.nombre}</strong><br>${mascota.descripcion}`);
+
+                    // 2. Crear la CARTA (Card) para el listado inferior
+                    const esDueño = usuarioId === mascota.autor;
+                    const cardHTML = `
+                    <div class="col">
+                        <div class="card h-100 shadow-sm border-0">
+                            <img src="${mascota.foto}" class="card-img-top" style="height: 200px; object-fit: cover; border-radius: 10px 10px 0 0;">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary">${mascota.nombre}</h5>
+                                <p class="card-text text-muted">${mascota.descripcion}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <small class="text-muted">📅 ${mascota.fecha}</small>
+                                    ${esDueño ? `<button class="btn btn-sm btn-outline-danger" onclick="eliminarMascota('${mascota._id}')">Eliminar</button>` : ''}
+                                </div>
+                            </div>
                         </div>
-                    `);
+                    </div>
+                `;
+                    if (contenedor) contenedor.innerHTML += cardHTML;
                 });
             })
-            .catch(err => console.error("Error al cargar mascotas:", err));
+            .catch(err => console.error("Error al cargar:", err));
     }
+
+    // Función global para eliminar (fuera del DOMContentLoaded)
+    window.eliminarMascota = function (id) {
+        if (!confirm("¿Ya encontraste a tu mascota o quieres borrar la publicación?")) return;
+
+        fetch(`/eliminar-mascota/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': localStorage.getItem('token') }
+        })
+            .then(res => res.json())
+            .then(data => {
+                alert(data.mensaje);
+                location.reload();
+            })
+            .catch(err => console.error("Error al eliminar:", err));
+    };
 
     // 5. LÓGICA DE USUARIOS (REGISTRO Y LOGIN)
     // --- LÓGICA DE REGISTRO ACTUALIZADA ---
@@ -233,13 +268,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const authButtons = document.getElementById('authButtons');
     const userInfo = document.getElementById('userInfo');
     const userNameSpan = document.getElementById('userName');
+    const btnPublicar = document.querySelector('[data-bs-target="#modalPublicar"]');
 
     if (token && nombre) {
         if (authButtons) authButtons.classList.add('d-none');
         if (userInfo) userInfo.classList.remove('d-none');
         if (userNameSpan) userNameSpan.innerText = nombre;
     }
-
+    if (token && nombre) {
+        // Si hay sesión, mostramos el botón
+        if (btnPublicar) btnPublicar.classList.remove('d-none');
+    } else {
+        // Si NO hay sesión, ocultamos el botón
+        if (btnPublicar) btnPublicar.classList.add('d-none');
+    }
     window.cerrarSesion = function () {
         localStorage.removeItem('token');
         localStorage.removeItem('nombreUsuario');
